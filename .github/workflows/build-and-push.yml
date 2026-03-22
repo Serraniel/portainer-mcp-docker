@@ -67,7 +67,7 @@ jobs:
             type=raw,value=latest
 
       - name: Build and push (stdio)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: Dockerfile
@@ -128,7 +128,7 @@ jobs:
             type=raw,value=http
 
       - name: Build and push (http)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: Dockerfile.http

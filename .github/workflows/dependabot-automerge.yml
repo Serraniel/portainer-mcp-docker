@@ -31,7 +31,7 @@ jobs:
           echo "upstream_version=${UPSTREAM_VERSION}" >> "$GITHUB_OUTPUT"
 
       - name: Test build (stdio)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: Dockerfile
@@ -41,7 +41,7 @@ jobs:
             PORTAINER_MCP_VERSION=${{ steps.version.outputs.upstream_version }}
 
       - name: Test build (http)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: Dockerfile.http
