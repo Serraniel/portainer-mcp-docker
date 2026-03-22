@@ -37,7 +37,7 @@ jobs:
             echo "new_release=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Create tag and trigger build
+      - name: Create release and trigger build
         if: steps.check.outputs.new_release == 'true'
         env:
           UPSTREAM_VERSION: ${{ steps.check.outputs.upstream_version }}
@@ -48,3 +48,11 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag -a "$NEW_TAG" -m "Upstream release v${UPSTREAM_VERSION}"
           git push origin "$NEW_TAG"
+
+          gh release create "$NEW_TAG" \
+            --title "$NEW_TAG" \
+            --notes "Based on upstream [portainer-mcp v${UPSTREAM_VERSION}](https://github.com/portainer/portainer-mcp/releases/tag/v${UPSTREAM_VERSION}).
+
+          ### Docker Images
+          - **stdio:** \`ghcr.io/serraniel/portainer-mcp-docker:${NEW_TAG}\` / \`latest\`
+          - **HTTP:** \`ghcr.io/serraniel/portainer-mcp-docker:${NEW_TAG}-http\` / \`http\`"
