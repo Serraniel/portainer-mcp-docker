@@ -16,7 +16,7 @@ RUN apk add --no-cache curl tar \
 # --- Final image with mcp-proxy ---
 FROM python:3.13-alpine
 
-RUN apk add --no-cache ca-certificates curl \
+RUN apk add --no-cache ca-certificates curl libc6-compat \
     && pip install --no-cache-dir mcp-proxy
 
 COPY --from=download /usr/local/bin/portainer-mcp /usr/local/bin/portainer-mcp

@@ -13,7 +13,7 @@ RUN apk add --no-cache curl tar \
 
 FROM alpine:3.23
 
-RUN apk add --no-cache ca-certificates
+RUN apk add --no-cache ca-certificates libc6-compat
 
 COPY --from=download /usr/local/bin/portainer-mcp /usr/local/bin/portainer-mcp
 

@@ -50,6 +50,20 @@ docker run -i --rm ghcr.io/serraniel/portainer-mcp-docker:latest \
   -token your-api-token
 ```
 
+### Networking: Portainer on the Same Host
+
+When Portainer runs on the same machine as the MCP container, `localhost` inside the container refers to the container itself, not the host. Use `host.docker.internal` instead:
+
+```bash
+docker run -i --rm \
+  --add-host=host.docker.internal:host-gateway \
+  ghcr.io/serraniel/portainer-mcp-docker:latest \
+  -server https://host.docker.internal:9443 \
+  -token your-api-token
+```
+
+> **Note:** If Portainer uses a self-signed certificate, you may also need `-disable-version-check` to avoid TLS errors during the version check.
+
 ### MCP Client Configuration
 
 #### Claude Desktop
@@ -63,14 +77,17 @@ Add to your `claude_desktop_config.json`:
       "command": "docker",
       "args": [
         "run", "-i", "--rm",
+        "--add-host=host.docker.internal:host-gateway",
         "ghcr.io/serraniel/portainer-mcp-docker:latest",
-        "-server", "https://your-portainer:9443",
+        "-server", "https://host.docker.internal:9443",
         "-token", "your-api-token"
       ]
     }
   }
 }
 ```
+
+> Replace `host.docker.internal` with your Portainer's actual hostname/IP if it runs on a different machine.
 
 #### Claude Code
 
@@ -83,8 +100,9 @@ Add to your Claude Code MCP settings:
       "command": "docker",
       "args": [
         "run", "-i", "--rm",
+        "--add-host=host.docker.internal:host-gateway",
         "ghcr.io/serraniel/portainer-mcp-docker:latest",
-        "-server", "https://your-portainer:9443",
+        "-server", "https://host.docker.internal:9443",
         "-token", "your-api-token"
       ]
     }
