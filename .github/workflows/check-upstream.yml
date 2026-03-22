@@ -1,0 +1,50 @@
+name: Check for Upstream Releases
+
+on:
+  schedule:
+    # Check daily at 06:00 UTC
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  check-upstream:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for new upstream release
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Get latest upstream release
+          UPSTREAM_VERSION=$(gh api repos/portainer/portainer-mcp/releases/latest --jq '.tag_name' | sed 's/^v//')
+          echo "upstream_version=${UPSTREAM_VERSION}" >> "$GITHUB_OUTPUT"
+
+          # Check if we already have a tag for this upstream version
+          if git tag -l "v${UPSTREAM_VERSION}-*" | grep -q .; then
+            echo "Tag for v${UPSTREAM_VERSION} already exists, skipping."
+            echo "new_release=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "New upstream release found: v${UPSTREAM_VERSION}"
+            echo "new_release=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create tag and trigger build
+        if: steps.check.outputs.new_release == 'true'
+        env:
+          UPSTREAM_VERSION: ${{ steps.check.outputs.upstream_version }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NEW_TAG="v${UPSTREAM_VERSION}-1"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$NEW_TAG" -m "Upstream release v${UPSTREAM_VERSION}"
+          git push origin "$NEW_TAG"
