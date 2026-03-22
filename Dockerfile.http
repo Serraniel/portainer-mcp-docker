@@ -1,0 +1,30 @@
+# syntax=docker/dockerfile:1
+
+# --- Download portainer-mcp binary ---
+FROM alpine:3.21 AS download
+
+ARG PORTAINER_MCP_VERSION
+ARG TARGETARCH
+
+RUN apk add --no-cache curl tar \
+    && curl -fsSL "https://github.com/portainer/portainer-mcp/releases/download/v${PORTAINER_MCP_VERSION}/portainer-mcp-v${PORTAINER_MCP_VERSION}-linux-${TARGETARCH}.tar.gz" \
+       -o /tmp/portainer-mcp.tar.gz \
+    && tar -xzf /tmp/portainer-mcp.tar.gz -C /tmp \
+    && mv /tmp/portainer-mcp /usr/local/bin/portainer-mcp \
+    && chmod +x /usr/local/bin/portainer-mcp
+
+# --- Final image with mcp-proxy ---
+FROM ghcr.io/sparfenyuk/mcp-proxy:latest-alpine
+
+RUN apk add --no-cache ca-certificates
+
+COPY --from=download /usr/local/bin/portainer-mcp /usr/local/bin/portainer-mcp
+COPY entrypoint-http.sh /entrypoint-http.sh
+RUN chmod +x /entrypoint-http.sh
+
+ENV MCP_PORT=8080
+ENV MCP_HOST=0.0.0.0
+
+EXPOSE 8080
+
+ENTRYPOINT ["/entrypoint-http.sh"]

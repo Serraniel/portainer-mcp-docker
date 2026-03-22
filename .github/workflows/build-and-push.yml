@@ -19,7 +19,7 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-and-push:
+  build-stdio:
     runs-on: ubuntu-latest
 
     steps:
@@ -57,7 +57,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata
+      - name: Extract metadata (stdio)
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -66,15 +66,77 @@ jobs:
             type=raw,value=${{ steps.version.outputs.full_tag }}
             type=raw,value=latest
 
-      - name: Build and push
+      - name: Build and push (stdio)
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             PORTAINER_MCP_VERSION=${{ steps.version.outputs.upstream_version }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=stdio
+          cache-to: type=gha,mode=max,scope=stdio
+
+  build-http:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract version info
+        id: version
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.upstream_version }}
+          REF: ${{ github.ref }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            UPSTREAM_VERSION="$INPUT_VERSION"
+            echo "upstream_version=${UPSTREAM_VERSION}" >> "$GITHUB_OUTPUT"
+            echo "full_tag=v${UPSTREAM_VERSION}-1" >> "$GITHUB_OUTPUT"
+          else
+            TAG="${REF#refs/tags/}"
+            UPSTREAM_VERSION=$(echo "$TAG" | sed 's/^v//' | sed 's/-[0-9]*$//')
+            echo "upstream_version=${UPSTREAM_VERSION}" >> "$GITHUB_OUTPUT"
+            echo "full_tag=${TAG}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (http)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ steps.version.outputs.full_tag }}-http
+            type=raw,value=http
+
+      - name: Build and push (http)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.http
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            PORTAINER_MCP_VERSION=${{ steps.version.outputs.upstream_version }}
+          cache-from: type=gha,scope=http
+          cache-to: type=gha,mode=max,scope=http

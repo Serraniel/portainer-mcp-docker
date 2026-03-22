@@ -1,5 +1,5 @@
-# Example: Run portainer-mcp alongside Portainer in the same compose file.
-# Adjust the environment variables and ports to match your setup.
+# Example: Run portainer-mcp HTTP variant alongside Portainer.
+# For stdio variant usage, see the README.
 
 services:
   portainer:
@@ -12,21 +12,18 @@ services:
       - portainer_data:/data
 
   portainer-mcp:
-    image: ghcr.io/serraniel/portainer-mcp-docker:latest
-    restart: "no"
-    stdin_open: true
+    image: ghcr.io/serraniel/portainer-mcp-docker:http
+    restart: always
+    ports:
+      - "8080:8080"
     environment:
       - PORTAINER_SERVER=https://portainer:9443
       - PORTAINER_TOKEN=${PORTAINER_TOKEN}
-    command:
-      - "-server"
-      - "https://portainer:9443"
-      - "-token"
-      - "${PORTAINER_TOKEN}"
+      - API_ACCESS_TOKEN=${MCP_API_TOKEN}
       # Uncomment for read-only mode:
-      # - "-read-only"
+      # - PORTAINER_READ_ONLY=true
       # Uncomment to skip Portainer version validation:
-      # - "-disable-version-check"
+      # - PORTAINER_DISABLE_VERSION_CHECK=true
 
 volumes:
   portainer_data:
