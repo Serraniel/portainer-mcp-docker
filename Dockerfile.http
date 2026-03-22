@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # --- Download portainer-mcp binary ---
-FROM alpine:3.21 AS download
+FROM alpine:3.23 AS download
 
 ARG PORTAINER_MCP_VERSION
 ARG TARGETARCH

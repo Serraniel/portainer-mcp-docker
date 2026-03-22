@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM alpine:3.21 AS download
+FROM alpine:3.23 AS download
 
 ARG PORTAINER_MCP_VERSION
 ARG TARGETARCH
@@ -11,7 +11,7 @@ RUN apk add --no-cache curl tar \
     && mv /tmp/portainer-mcp /usr/local/bin/portainer-mcp \
     && chmod +x /usr/local/bin/portainer-mcp
 
-FROM alpine:3.21
+FROM alpine:3.23
 
 RUN apk add --no-cache ca-certificates
 
