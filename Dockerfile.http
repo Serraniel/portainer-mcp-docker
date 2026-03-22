@@ -16,7 +16,7 @@ RUN apk add --no-cache curl tar \
 # --- Final image with mcp-proxy ---
 FROM python:3.13-alpine
 
-RUN apk add --no-cache ca-certificates \
+RUN apk add --no-cache ca-certificates curl \
     && pip install --no-cache-dir mcp-proxy
 
 COPY --from=download /usr/local/bin/portainer-mcp /usr/local/bin/portainer-mcp
@@ -30,5 +30,8 @@ ENV MCP_PORT=8080
 ENV MCP_HOST=0.0.0.0
 
 EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD curl -sf http://localhost:${MCP_PORT:-8080}/status || exit 1
 
 ENTRYPOINT ["/entrypoint-http.sh"]

@@ -96,6 +96,20 @@ Add to your Claude Code MCP settings:
 
 ## HTTP Variant (Remote)
 
+### Generating Tokens
+
+The HTTP variant requires two tokens:
+
+1. **Portainer API token** (`PORTAINER_TOKEN`) — authenticates the MCP server against your Portainer instance. Generate one in the Portainer UI under *My Account > Access Tokens > Add access token*.
+
+2. **MCP bearer token** (`API_ACCESS_TOKEN`) — protects the HTTP endpoint so only authorized MCP clients can connect. This is a secret you create yourself. Generate a secure random token:
+
+```bash
+openssl rand -hex 32
+```
+
+Use the output as your `MCP_API_TOKEN` in the `.env` file and configure the same value in your MCP client's `Authorization: Bearer <token>` header.
+
 ### Quick Start
 
 ```bash
