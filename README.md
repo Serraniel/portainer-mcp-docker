@@ -46,7 +46,7 @@ Wraps the MCP server with [mcp-proxy](https://github.com/sparfenyuk/mcp-proxy) t
 docker pull ghcr.io/serraniel/portainer-mcp-docker:latest
 
 docker run -i --rm ghcr.io/serraniel/portainer-mcp-docker:latest \
-  -server https://your-portainer:9443 \
+  -server your-portainer:9443 \
   -token your-api-token
 ```
 
@@ -58,11 +58,9 @@ When Portainer runs on the same machine as the MCP container, `localhost` inside
 docker run -i --rm \
   --add-host=host.docker.internal:host-gateway \
   ghcr.io/serraniel/portainer-mcp-docker:latest \
-  -server https://host.docker.internal:9443 \
+  -server host.docker.internal:9443 \
   -token your-api-token
 ```
-
-> **Note:** If Portainer uses a self-signed certificate, you may also need `-disable-version-check` to avoid TLS errors during the version check.
 
 ### MCP Client Configuration
 
@@ -79,7 +77,7 @@ Add to your `claude_desktop_config.json`:
         "run", "-i", "--rm",
         "--add-host=host.docker.internal:host-gateway",
         "ghcr.io/serraniel/portainer-mcp-docker:latest",
-        "-server", "https://host.docker.internal:9443",
+        "-server", "host.docker.internal:9443",
         "-token", "your-api-token"
       ]
     }
@@ -87,7 +85,7 @@ Add to your `claude_desktop_config.json`:
 }
 ```
 
-> Replace `host.docker.internal` with your Portainer's actual hostname/IP if it runs on a different machine.
+> Replace `host.docker.internal:9443` with your Portainer's actual `hostname:port` if it runs on a different machine.
 
 #### Claude Code
 
@@ -102,7 +100,7 @@ Add to your Claude Code MCP settings:
         "run", "-i", "--rm",
         "--add-host=host.docker.internal:host-gateway",
         "ghcr.io/serraniel/portainer-mcp-docker:latest",
-        "-server", "https://host.docker.internal:9443",
+        "-server", "host.docker.internal:9443",
         "-token", "your-api-token"
       ]
     }
@@ -135,7 +133,7 @@ docker pull ghcr.io/serraniel/portainer-mcp-docker:http
 
 docker run -d --rm \
   -p 8080:8080 \
-  -e PORTAINER_SERVER=https://your-portainer:9443 \
+  -e PORTAINER_SERVER=your-portainer:9443 \
   -e PORTAINER_TOKEN=your-portainer-api-token \
   -e API_ACCESS_TOKEN=your-mcp-bearer-token \
   ghcr.io/serraniel/portainer-mcp-docker:http
@@ -160,7 +158,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - PORTAINER_SERVER=https://portainer:9443
+      - PORTAINER_SERVER=portainer:9443
       - PORTAINER_TOKEN=${PORTAINER_TOKEN}
       - API_ACCESS_TOKEN=${MCP_API_TOKEN}
       # Optional:
@@ -209,7 +207,7 @@ Configure your MCP client to connect to the HTTP endpoint:
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `PORTAINER_SERVER` | Yes | Portainer server URL |
+| `PORTAINER_SERVER` | Yes | Portainer server address as `host:port` (no protocol prefix, HTTPS is used automatically) |
 | `PORTAINER_TOKEN` | Yes | Portainer API access token |
 | `API_ACCESS_TOKEN` | Recommended | Bearer token for MCP endpoint authentication |
 | `PORTAINER_READ_ONLY` | No | Set to `true` for read-only mode |
@@ -225,7 +223,7 @@ All flags from the upstream binary are supported:
 
 | Flag | Description |
 |------|-------------|
-| `-server <url>` | Portainer server URL (**required**) |
+| `-server <host:port>` | Portainer server address, without protocol prefix (**required**) |
 | `-token <token>` | Portainer API access token (**required**) |
 | `-tools <path>` | Path to custom tools YAML file |
 | `-read-only` | Restrict to read-only operations (GET requests only) |

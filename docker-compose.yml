@@ -17,7 +17,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - PORTAINER_SERVER=https://portainer:9443
+      - PORTAINER_SERVER=portainer:9443
       - PORTAINER_TOKEN=${PORTAINER_TOKEN}
       - API_ACCESS_TOKEN=${MCP_API_TOKEN}
       # Uncomment for read-only mode:
